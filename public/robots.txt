@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://technology-and-ai.seniorhousingsolutions.net/sitemap-index.xml

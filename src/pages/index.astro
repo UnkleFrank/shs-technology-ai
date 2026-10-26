@@ -1,0 +1,217 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE, BRUCE } from '../data/site';
+
+const title = 'Senior Living Technology & AI in Naples | Bruce Rosenblatt';
+const description =
+  "Which Southwest Florida senior living communities use fall detection, family apps and AI monitoring? A local advisor's first-hand guide for families.";
+const url = Astro.site!.href;
+
+const faqs = [
+  {
+    q: 'What technology should a good assisted living community have?',
+    a: 'At minimum: a 24/7 emergency call system with tracked response times, a reliable way for families to reach staff, and backup power that keeps those systems running in a storm. Fall detection, family apps and smart sensors are valuable extras, but only if staff actually act on the alerts.',
+  },
+  {
+    q: 'Does AI fall detection replace staff checks?',
+    a: 'No. The best systems alert staff faster, but a person still has to respond. On a tour, ask how quickly someone arrives after an alert, not just whether the system exists.',
+  },
+  {
+    q: 'How can I stay connected to a parent in a Naples community if I live out of state?',
+    a: 'Ask whether the community offers a family app or portal, scheduled video calls, and a named staff contact for updates. Bruce can tell you which local communities do this well.',
+  },
+  {
+    q: "What happens to a community's technology during a hurricane?",
+    a: 'It depends on the generator. Ask what it powers — call systems, Wi-Fi, air conditioning, medical equipment — and for how long. Southwest Florida families should ask this on every tour.',
+  },
+  {
+    q: 'Is it safe to use ChatGPT or other AI tools to research senior living costs?',
+    a: "They're useful for general questions, but they usually rely on national averages and outdated figures. Local pricing in Naples, Bonita Springs and Fort Myers varies widely, so verify with someone who tracks it firsthand.",
+  },
+  {
+    // TODO (Bruce): confirm wording on how the service is funded.
+    q: 'Does it cost anything to work with Bruce?',
+    a: "No. Families never pay for Bruce's help.",
+  },
+];
+
+const cards = [
+  {
+    title: 'Community Tech Scorecard',
+    body: 'See which Naples, Bonita Springs and Fort Myers communities offer fall detection, family apps, generator backup and resident Wi-Fi. Verified by Bruce, not copied from websites.',
+    cta: 'Coming soon',
+  },
+  {
+    title: 'The Tour Tech Checklist',
+    body: 'Twelve questions to ask on every tour, from emergency call response times to what happens to the Wi-Fi in a hurricane. Free printable.',
+    cta: 'Coming soon',
+  },
+  {
+    title: 'Guides for families',
+    body: 'Plain-English answers on AI fall detection, memory care technology, staying connected from out of state, and protecting your parent from AI-powered scams.',
+    cta: 'Coming soon',
+  },
+  // Card 4 (tech-readiness quiz) is held back until Phase 3.
+];
+
+const personId = `${url}#bruce`;
+const schema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Person',
+      '@id': personId,
+      name: BRUCE.name,
+      alternateName: BRUCE.alias,
+      jobTitle: BRUCE.jobTitle,
+      hasCredential: BRUCE.credential,
+      email: SITE.email,
+      telephone: '+12395590207',
+      worksFor: { '@type': 'LocalBusiness', name: 'Senior Housing Solutions', url: SITE.mainSite },
+      memberOf: { '@type': 'Organization', name: 'National Network of Senior Housing Advisors' },
+      areaServed: ['Naples, FL', 'Bonita Springs, FL', 'Fort Myers, FL'],
+    },
+    {
+      '@type': 'WebPage',
+      '@id': `${url}#webpage`,
+      url,
+      name: title,
+      description,
+      author: { '@id': personId },
+      about: 'Technology in senior living communities in Southwest Florida',
+    },
+    {
+      '@type': 'FAQPage',
+      '@id': `${url}#faq`,
+      mainEntity: faqs.map((f) => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    },
+  ],
+};
+---
+<Base title={title} description={description} schema={schema}>
+  <section class="hero">
+    <div class="wrap narrow">
+      <p class="eyebrow">Senior Housing Solutions · Technology &amp; AI</p>
+      <h1>The brochure says “smart technology.” Here’s what’s actually behind the door.</h1>
+      <p class="lede">
+        Fall detection, emergency call systems, family apps, AI monitoring. Bruce Rosenblatt has toured these
+        Southwest Florida communities in person. He’ll tell you which tech is real, which is marketing, and which
+        actually matters for your parent.
+      </p>
+      <div class="ctas">
+        <a class="btn btn-primary" href={SITE.consultUrl}>Talk to Bruce — Free Consultation</a>
+        <a class="btn btn-secondary" href="#find">Get the Tour Tech Checklist</a>
+      </div>
+      <p class="trust">
+        CDP-credentialed advisor · Serving Naples, Bonita Springs and Fort Myers since 2008 · Founding member,
+        National Network of Senior Housing Advisors
+      </p>
+    </div>
+  </section>
+
+  <section class="intro">
+    <div class="wrap narrow">
+      <h2>Why I built this site</h2>
+      <p>
+        Every community I tour now tells families about its technology. Some of it genuinely keeps residents safer.
+        Some of it is a tablet in the lobby that nobody uses.
+      </p>
+      <p>
+        When your mother falls at 2 a.m., what matters is how fast someone reaches her. When you live 1,200 miles
+        away, what matters is whether you’ll actually hear from the staff. Those answers aren’t in the brochure.
+        <!-- TODO (Bruce): replace "years" with his actual touring tenure. -->
+        I’ve spent years walking these buildings and asking the questions families don’t know to ask.
+      </p>
+      <p>
+        This site puts what I’ve seen in one place, so you can compare communities on what really matters, not on
+        what’s marketed.
+      </p>
+      <p class="sig">— Bruce Rosenblatt, CDP, the “Matchmaker of Senior Housing”</p>
+    </div>
+  </section>
+
+  <section id="find" class="find">
+    <div class="wrap">
+      <h2>Start where you are</h2>
+      <div class="cards">
+        {cards.map((c) => (
+          <article class="card">
+            <h3>{c.title}</h3>
+            <p>{c.body}</p>
+            <span class="soon">{c.cta}</span>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="faq">
+    <div class="wrap narrow">
+      <h2>Common questions</h2>
+      {faqs.map((f) => (
+        <details>
+          <summary>{f.q}</summary>
+          <p>{f.a}</p>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <section class="about">
+    <div class="wrap narrow">
+      <h2>Your guide: Bruce Rosenblatt, CDP</h2>
+      <p>
+        Bruce has spent more than 35 years in senior housing and has been matching Southwest Florida families with
+        the right community since 2008. Families know him as the “Matchmaker of Senior Housing.”
+      </p>
+      <p>
+        He is a Certified Dementia Practitioner and a founding member of the National Network of Senior Housing
+        Advisors. He personally tours the communities he recommends, so he knows their pricing, their staff and
+        their technology firsthand. Families pay nothing for his help.
+      </p>
+      <ul class="creds">
+        <li>Certified Dementia Practitioner (CDP)</li>
+        <li>Founding member, NNSHA</li>
+        <li>35+ years in senior housing</li>
+        <li>Serving Naples, Bonita Springs and Fort Myers since 2008</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="closing">
+    <div class="wrap narrow">
+      <h2>Technology is one piece. The right fit is the whole picture.</h2>
+      <p>
+        The best-wired building isn’t the right home if the care, the cost or the people are wrong. Tell Bruce about
+        your parent, and he’ll narrow Southwest Florida down to the communities that fit — tech included.
+      </p>
+      <div class="ctas">
+        <a class="btn btn-primary" href={SITE.consultUrl}>Schedule a Free Consultation</a>
+        <a class="btn btn-secondary" href={SITE.phoneHref}>Call {SITE.phoneDisplay}</a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .hero { padding-top: 80px; }
+  .eyebrow { text-transform: uppercase; letter-spacing: .08em; font-size: .85rem; font-weight: 600; color: var(--warm); }
+  .lede { font-size: 1.25rem; color: var(--muted); }
+  .ctas { display: flex; flex-wrap: wrap; gap: 12px; margin: 28px 0; }
+  .trust { font-size: .95rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; }
+  .intro, .about { background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .sig { font-style: italic; color: var(--muted); }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; display: flex; flex-direction: column; }
+  .card p { color: var(--muted); flex: 1; }
+  .soon { font-size: .9rem; font-weight: 600; color: var(--warm); }
+  details { border-bottom: 1px solid var(--line); padding: 16px 0; }
+  summary { cursor: pointer; font-weight: 600; font-size: 1.15rem; }
+  details p { margin-top: 10px; color: var(--muted); }
+  .creds { padding-left: 1.2em; }
+  .closing { text-align: left; }
+</style>

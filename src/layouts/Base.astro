@@ -1,0 +1,97 @@
+---
+import { SITE } from '../data/site';
+
+interface Props {
+  title: string;
+  description: string;
+  schema?: object;
+}
+
+const { title, description, schema } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet" />
+    {schema && <script type="application/ld+json" set:html={JSON.stringify(schema)} />}
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-inner">
+        <a class="brand" href="/">Senior Housing Solutions <span>Technology &amp; AI</span></a>
+        <a class="header-phone" href={SITE.phoneHref}>{SITE.phoneDisplay}</a>
+      </div>
+    </header>
+    <main><slot /></main>
+    <footer class="site-footer">
+      <div class="wrap">
+        <p><a href={SITE.mainSite}>← Back to seniorhousingsolutions.net</a></p>
+        <p>Bruce Rosenblatt, CDP · <a href={`mailto:${SITE.email}`}>{SITE.email}</a> · <a href={SITE.phoneHref}>{SITE.phoneDisplay}</a></p>
+        <p class="fine">© {new Date().getFullYear()} Senior Housing Solutions</p>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    --ink: #1f2a2e;
+    --muted: #55636a;
+    --bg: #fbf8f3;
+    --surface: #ffffff;
+    --line: #e6dfd3;
+    --accent: #0f5c63;
+    --accent-ink: #ffffff;
+    --warm: #c8743a;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 400 1.125rem/1.65 'Source Sans 3', system-ui, sans-serif;
+  }
+  h1, h2, h3 { font-family: 'Fraunces', Georgia, serif; font-weight: 600; line-height: 1.2; margin: 0 0 .6em; }
+  h1 { font-size: clamp(2rem, 5vw, 3.1rem); }
+  h2 { font-size: clamp(1.6rem, 3.5vw, 2.2rem); }
+  h3 { font-size: 1.25rem; }
+  p { margin: 0 0 1em; }
+  a { color: var(--accent); }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+  .narrow { max-width: 720px; }
+  section { padding: 64px 0; }
+
+  .site-header { border-bottom: 1px solid var(--line); background: var(--surface); }
+  .header-inner { display: flex; justify-content: space-between; align-items: center; padding-top: 14px; padding-bottom: 14px; gap: 12px; }
+  .brand { font-family: 'Fraunces', Georgia, serif; font-weight: 600; color: var(--ink); text-decoration: none; }
+  .brand span { color: var(--warm); font-weight: 500; }
+  .header-phone { font-weight: 600; text-decoration: none; white-space: nowrap; }
+
+  .btn { display: inline-block; padding: 14px 22px; border-radius: 999px; font-weight: 600; text-decoration: none; }
+  .btn-primary { background: var(--accent); color: var(--accent-ink); }
+  .btn-secondary { border: 2px solid var(--accent); color: var(--accent); }
+
+  .site-footer { border-top: 1px solid var(--line); padding: 32px 0; color: var(--muted); font-size: 1rem; }
+  .site-footer p { margin: 0 0 .4em; }
+  .fine { font-size: .875rem; }
+
+  @media (max-width: 560px) {
+    .brand span { display: block; }
+    section { padding: 44px 0; }
+  }
+</style>

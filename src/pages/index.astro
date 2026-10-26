@@ -70,6 +70,7 @@ const schema = {
       worksFor: { '@type': 'LocalBusiness', name: 'Senior Housing Solutions', url: SITE.mainSite },
       memberOf: { '@type': 'Organization', name: 'National Network of Senior Housing Advisors' },
       areaServed: ['Naples, FL', 'Bonita Springs, FL', 'Fort Myers, FL'],
+      image: new URL('/bruce-rosenblatt.jpg', Astro.site).href,
     },
     {
       '@type': 'WebPage',
@@ -162,7 +163,13 @@ const schema = {
   </section>
 
   <section class="about">
-    <div class="wrap narrow">
+    <div class="wrap about-grid">
+      <picture class="about-photo">
+        <source srcset="/bruce-rosenblatt.webp" type="image/webp" />
+        <img src="/bruce-rosenblatt.jpg" width="603" height="800" loading="lazy"
+             alt="Bruce Rosenblatt, CDP, senior housing advisor in Southwest Florida" />
+      </picture>
+      <div>
       <h2>Your guide: Bruce Rosenblatt, CDP</h2>
       <p>
         Bruce has spent more than 35 years in senior housing and has been matching Southwest Florida families with
@@ -179,6 +186,7 @@ const schema = {
         <li>35+ years in senior housing</li>
         <li>Serving Naples, Bonita Springs and Fort Myers since 2008</li>
       </ul>
+      </div>
     </div>
   </section>
 
@@ -213,5 +221,11 @@ const schema = {
   summary { cursor: pointer; font-weight: 600; font-size: 1.15rem; }
   details p { margin-top: 10px; color: var(--muted); }
   .creds { padding-left: 1.2em; }
+  .about-grid { display: grid; grid-template-columns: 260px 1fr; gap: 40px; align-items: start; max-width: 960px; }
+  .about-photo img { width: 100%; height: auto; display: block; border-radius: var(--radius); }
+  @media (max-width: 720px) {
+    .about-grid { grid-template-columns: 1fr; gap: 24px; }
+    .about-photo { max-width: 220px; }
+  }
   .closing { text-align: left; }
 </style>

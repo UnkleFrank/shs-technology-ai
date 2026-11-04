@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import { SITE, BRUCE } from '../data/site';
+import scorecard from '../data/communities.json';
 
 const title = 'Senior Living Technology & AI in Naples | Bruce Rosenblatt';
 const description =
@@ -38,8 +39,9 @@ const faqs = [
 const cards = [
   {
     title: 'Community Tech Scorecard',
-    body: 'See which Naples, Bonita Springs and Fort Myers communities offer fall detection, family apps, generator backup and resident Wi-Fi. Verified by Bruce, not copied from websites.',
-    cta: 'Coming soon',
+    body: `Compare ${scorecard.communities.length} communities from Marco Island to Cape Coral on fall detection, emergency call systems, medication tracking and generator backup. Verified by Bruce, not copied from websites.`,
+    cta: 'Compare communities →',
+    href: '/scorecard/',
   },
   {
     title: 'The Tour Tech Checklist',
@@ -143,7 +145,7 @@ const schema = {
           <article class="card">
             <h3>{c.title}</h3>
             <p>{c.body}</p>
-            <span class="soon">{c.cta}</span>
+            {c.href ? <a class="card-link" href={c.href}>{c.cta}</a> : <span class="soon">{c.cta}</span>}
           </article>
         ))}
       </div>
@@ -217,6 +219,7 @@ const schema = {
   .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; display: flex; flex-direction: column; }
   .card p { color: var(--muted); flex: 1; }
   .soon { font-size: .9rem; font-weight: 600; color: var(--warm); }
+  .card-link { font-weight: 600; text-decoration: none; }
   details { border-bottom: 1px solid var(--line); padding: 16px 0; }
   summary { cursor: pointer; font-weight: 600; font-size: 1.15rem; }
   details p { margin-top: 10px; color: var(--muted); }

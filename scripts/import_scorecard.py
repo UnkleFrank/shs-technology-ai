@@ -22,10 +22,18 @@ NAME_FIXES = {
     "Discovery Village Naples - ALF/MC": "Discovery Village Naples – AL/MC",
     "Aston Gardens at Pelican Marsh - IL": "Aston Gardens at Pelican Marsh – Independent Living",
     "Aston Gardens at Pelican Marsh - AL/MC": "Aston Gardens at Pelican Marsh – AL/MC",
+    "Colliers at Naples": "The Collier of Naples",  # confirmed by Bruce 2026-11-05
 }
 ADDRESS_FIXES = {"Rue Ju Jardin": "Rue du Jardin"}
 # Care-level fixes where the row's own name contradicts the entry.
 CARE_FIXES = {"Aston Gardens at Pelican Marsh - AL/MC": ["AL", "MC"]}
+# Date typos confirmed by Bruce 2026-11-05 (sheet had 2016).
+DATE_FIXES = {
+    "Marbella at Pelican Bay": datetime.date(2026, 1, 16),
+    "The Cove at Marbella": datetime.date(2026, 1, 16),
+}
+APP_NAME_FIXES = {"Senior Simon i": "Senior Simon"}
+# Bruce: "N/A" in the family-app column means no app is offered.
 
 
 def s(v):
@@ -149,15 +157,17 @@ def main(path):
         if "MC" not in levels:
             wander = "N/A"
         app_raw = s(g(r, "Family app or portal"))
-        app = "Yes" if app_raw.lower().startswith("y") else None
+        app = "Yes" if app_raw.lower().startswith("y") else ("No" if app_raw else None)
+        app_name = s(g(r, "App name (if known)")) if app == "Yes" else ""
+        app_name = APP_NAME_FIXES.get(app_name, app_name)
 
-        d = g(r, "Date last toured / verified")
+        d = DATE_FIXES.get(name) or g(r, "Date last toured / verified")
         verified, via = None, None
         if isinstance(d, (datetime.datetime, datetime.date)):
             dd = d.date() if isinstance(d, datetime.datetime) else d
             verified, via = dd.isoformat(), "tour"
             if dd > TODAY:
-                flags.append(f"{name}: verified date {dd} is in the future")
+                flags.append(f"{name}: tour scheduled {dd} (shown as 'Tour scheduled' until then)")
             elif dd.year < 2024:
                 flags.append(f"{name}: verified date {dd} looks like a typo")
         elif s(d).lower().startswith("email"):
@@ -167,8 +177,6 @@ def main(path):
         for a, b in ADDRESS_FIXES.items():
             addr = addr.replace(a, b)
         pub = NAME_FIXES.get(name, name)
-        if "MC" in levels and wander == "No":
-            flags.append(f"{pub}: has memory care but wander management = No")
         out.append({
             "slug": slugify(pub),
             "name": pub,
@@ -177,7 +185,7 @@ def main(path):
             "care": levels,
             "emergencyCall": ec, "emergencyCallDetail": ec_d,
             "fallDetection": fd, "fallDetectionDetail": fd_d,
-            "familyApp": app, "familyAppName": s(g(r, "App name (if known)")) if app else "",
+            "familyApp": app, "familyAppName": app_name,
             "emar": em, "emarDetail": em_d,
             "wifi": "Yes" if s(g(r, "Resident Wi-Fi")).lower().startswith("y") else None,
             "generator": gen,

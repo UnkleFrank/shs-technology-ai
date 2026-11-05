@@ -223,7 +223,39 @@ const schema = {
     }
     shown.textContent = String(n);
   }
-  form.addEventListener('change', apply);
+
+  // Deep links: ?city=naples (or fort-myers), &care=MC, &fall=1, &gen=1, &emar=1
+  const norm = (s: string) => s.toLowerCase().replace(/[-_+]/g, ' ').trim();
+  function fromUrl() {
+    const q = new URLSearchParams(location.search);
+    const city = form.elements.namedItem('city') as HTMLSelectElement;
+    const care = form.elements.namedItem('care') as HTMLSelectElement;
+    if (q.get('city')) {
+      const want = norm(q.get('city')!);
+      const opt = Array.from(city.options).find((o) => o.value && norm(o.value) === want);
+      if (opt) city.value = opt.value;
+    }
+    if (q.get('care')) {
+      const want = q.get('care')!.toUpperCase();
+      if (Array.from(care.options).some((o) => o.value === want)) care.value = want;
+    }
+    for (const k of ['fall', 'gen', 'emar']) {
+      if (q.get(k) === '1') (form.elements.namedItem(k) as HTMLInputElement).checked = true;
+    }
+  }
+  function toUrl() {
+    const f = new FormData(form);
+    const q = new URLSearchParams();
+    if (f.get('city')) q.set('city', String(f.get('city')).toLowerCase().replace(/ /g, '-'));
+    if (f.get('care')) q.set('care', String(f.get('care')));
+    for (const k of ['fall', 'gen', 'emar']) if (f.get(k)) q.set(k, '1');
+    const s = q.toString();
+    history.replaceState(null, '', s ? `?${s}` : location.pathname);
+  }
+
+  fromUrl();
+  apply();
+  form.addEventListener('change', () => { apply(); toUrl(); });
 </script>
 
 <style>

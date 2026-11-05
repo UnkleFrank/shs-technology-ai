@@ -1,0 +1,282 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE, BRUCE } from '../data/site';
+import data from '../data/communities.json';
+
+type C = (typeof data.communities)[number];
+const list: C[] = data.communities;
+const total = list.length;
+
+const count = (fn: (c: C) => boolean) => list.filter(fn).length;
+const stats = {
+  fall: count((c) => c.fallDetection === 'Yes' || c.fallDetection === 'Memory care only'),
+  generator: count((c) => c.generator === 'Whole building'),
+  emar: count((c) => c.emar === 'Yes'),
+  app: count((c) => c.familyApp === 'Yes'),
+  toured: count((c) => c.verifiedVia === 'tour'),
+};
+const cities = [...new Set(list.map((c) => c.city))];
+
+const title = 'Senior Living Tech Scorecard: Naples to Fort Myers | Bruce Rosenblatt';
+const description = `Fall detection, emergency call systems, electronic medication records and generator coverage at ${total} Southwest Florida senior living communities, verified by advisor Bruce Rosenblatt, CDP.`;
+const url = new URL('/scorecard/', Astro.site).href;
+const updated = new Date(data.lastUpdated + 'T12:00:00');
+const updatedLabel = updated.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+const fmtVerified = (c: C) => {
+  if (c.verifiedVia === 'email') return 'Confirmed by email';
+  if (!c.verified) return '—';
+  const d = new Date(c.verified + 'T12:00:00');
+  if (d > new Date()) return 'Tour scheduled';
+  return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+};
+const tone = (v: string | null) =>
+  v === 'Yes' || v === 'Whole building' || v === 'Pendant + wall cords' ? 'good'
+  : v === 'No' || v === 'None' ? 'none' : 'some';
+
+const personId = new URL('/#bruce', Astro.site).href;
+const schema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Dataset',
+      '@id': `${url}#dataset`,
+      name: 'Southwest Florida Senior Living Technology Scorecard',
+      description,
+      url,
+      creator: { '@type': 'Person', '@id': personId, name: BRUCE.name },
+      dateModified: data.lastUpdated,
+      isAccessibleForFree: true,
+      spatialCoverage: { '@type': 'Place', name: 'Collier and Lee Counties, Florida' },
+      variableMeasured: [
+        'Emergency call system',
+        'Fall detection technology',
+        'Electronic medication administration records (eMAR)',
+        'Emergency generator coverage',
+        'Family app or portal',
+        'Resident Wi-Fi',
+      ],
+      measurementTechnique: 'In-person community tours and direct confirmation from communities by Bruce Rosenblatt, CDP',
+    },
+    {
+      '@type': 'WebPage',
+      '@id': `${url}#webpage`,
+      url,
+      name: title,
+      description,
+      author: { '@id': personId },
+      isPartOf: { '@type': 'WebSite', url: Astro.site!.href },
+    },
+  ],
+};
+---
+<Base title={title} description={description} schema={schema}>
+  <section class="intro">
+    <div class="wrap narrow">
+      <p class="eyebrow">Community Tech Scorecard</p>
+      <h1>What technology do Southwest Florida senior living communities actually have?</h1>
+      <p class="lede">
+        Bruce Rosenblatt, CDP, checked {total} communities from Marco Island to Cape Coral, in person or
+        directly with each community. This is what he found, not what the brochures say.
+      </p>
+      <p class="updated">Last updated {updatedLabel}</p>
+    </div>
+  </section>
+
+  <section class="stats-band">
+    <div class="wrap stats">
+      <div><strong>{stats.fall} of {total}</strong><span>have fall detection technology</span></div>
+      <div><strong>{stats.generator} of {total}</strong><span>run the whole building on a generator</span></div>
+      <div><strong>{stats.emar} of {total}</strong><span>track medications electronically (eMAR)</span></div>
+      <div><strong>{stats.app === 1 ? 'Only 1' : stats.app} of {total}</strong><span>{stats.app === 1 ? 'offers' : 'offer'} a family app</span></div>
+    </div>
+  </section>
+
+  <section class="board">
+    <div class="wrap">
+      <form class="filters" id="filters" aria-label="Filter communities">
+        <label>City
+          <select name="city">
+            <option value="">All cities</option>
+            {cities.map((c) => <option value={c}>{c}</option>)}
+          </select>
+        </label>
+        <label>Care level
+          <select name="care">
+            <option value="">Any</option>
+            <option value="IL">Independent Living</option>
+            <option value="AL">Assisted Living</option>
+            <option value="MC">Memory Care</option>
+          </select>
+        </label>
+        <label class="check"><input type="checkbox" name="fall" /> Fall detection</label>
+        <label class="check"><input type="checkbox" name="gen" /> Whole-building generator</label>
+        <label class="check"><input type="checkbox" name="emar" /> eMAR</label>
+      </form>
+      <p class="showing" aria-live="polite"><span id="shown">{total}</span> of {total} communities</p>
+
+      <table class="score">
+        <thead>
+          <tr>
+            <th scope="col">Community</th>
+            <th scope="col">Emergency call</th>
+            <th scope="col">Fall detection</th>
+            <th scope="col">eMAR</th>
+            <th scope="col">Family app</th>
+            <th scope="col">Generator</th>
+            <th scope="col">Verified</th>
+          </tr>
+        </thead>
+        <tbody>
+          {list.map((c) => (
+            <tr
+              id={c.slug}
+              data-city={c.city}
+              data-care={c.care.join(' ')}
+              data-fall={c.fallDetection === 'Yes' || c.fallDetection === 'Memory care only' ? '1' : '0'}
+              data-gen={c.generator === 'Whole building' ? '1' : '0'}
+              data-emar={c.emar === 'Yes' ? '1' : '0'}
+            >
+              <th scope="row">
+                <span class="name">{c.name}</span>
+                <span class="meta">{c.city} · {c.care.map((l) => <abbr class="lvl" title={l === 'IL' ? 'Independent Living' : l === 'AL' ? 'Assisted Living' : 'Memory Care'}>{l}</abbr>)}</span>
+              </th>
+              <td data-label="Emergency call" class={tone(c.emergencyCall)}>
+                {c.emergencyCall ?? '—'}
+                {c.emergencyCallDetail && <small>{c.emergencyCallDetail}</small>}
+              </td>
+              <td data-label="Fall detection" class={tone(c.fallDetection)}>
+                {c.fallDetection ?? '—'}
+                {c.fallDetectionDetail && <small>{c.fallDetectionDetail}</small>}
+              </td>
+              <td data-label="eMAR" class={tone(c.emar)}>
+                {c.emar ?? '—'}
+                {c.emarDetail && <small>{c.emarDetail}</small>}
+              </td>
+              <td data-label="Family app" class={tone(c.familyApp)}>
+                {c.familyApp ?? '—'}
+                {c.familyAppName && <small>{c.familyAppName}</small>}
+              </td>
+              <td data-label="Generator" class={tone(c.generator)}>{c.generator ?? '—'}</td>
+              <td data-label="Verified" class="verified">{fmtVerified(c)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="read">
+    <div class="wrap narrow">
+      <h2>How to read this scorecard</h2>
+      <dl>
+        <dt>Emergency call</dt>
+        <dd>How residents call for help. “Pendant + wall cords” means both a wearable button and pull cords in the apartment.</dd>
+        <dt>Fall detection</dt>
+        <dd>Technology that notices a fall without the resident pressing anything, such as in-room sensors or radar. Where Bruce knows the system, it’s named.</dd>
+        <dt>eMAR</dt>
+        <dd>Electronic medication administration records. Medications are tracked digitally, which cuts dosing errors.</dd>
+        <dt>Family app</dt>
+        <dd>An app or portal where families can see activities, menus and important notices. Most communities still rely on phone calls and email, so ask how you’ll get updates.</dd>
+        <dt>Generator</dt>
+        <dd>What stays powered in an outage. “Common areas” usually means residents shelter in shared spaces during a long outage, not in their apartments. Ask about air conditioning specifically.</dd>
+        <dt>Verified</dt>
+        <dd>When Bruce last toured the community, or “Confirmed by email” when the community answered his questions directly.</dd>
+      </dl>
+      <p>Every community listed offers resident Wi-Fi, and every memory care community listed is a secured environment.</p>
+      <p class="caveat">
+        Technology changes. Use this to decide which communities to tour and what to ask — then confirm on your
+        visit. Spot something out of date? <a href={`mailto:${SITE.email}`}>Let Bruce know.</a>
+      </p>
+    </div>
+  </section>
+
+  <section class="closing">
+    <div class="wrap narrow">
+      <h2>Narrow {total} communities down to the right three.</h2>
+      <p>Bruce will match your parent’s care needs, budget and location to the communities that fit — at no cost to your family.</p>
+      <div class="ctas">
+        <a class="btn btn-primary" href={SITE.consultUrl}>Schedule a Free Consultation</a>
+        <a class="btn btn-secondary" href={SITE.phoneHref}>Call {SITE.phoneDisplay}</a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  const form = document.getElementById('filters') as HTMLFormElement;
+  const rows = Array.from(document.querySelectorAll<HTMLTableRowElement>('table.score tbody tr'));
+  const shown = document.getElementById('shown')!;
+  function apply() {
+    const f = new FormData(form);
+    const city = f.get('city'), care = f.get('care');
+    let n = 0;
+    for (const r of rows) {
+      const ok =
+        (!city || r.dataset.city === city) &&
+        (!care || (r.dataset.care ?? '').split(' ').includes(String(care))) &&
+        (!f.get('fall') || r.dataset.fall === '1') &&
+        (!f.get('gen') || r.dataset.gen === '1') &&
+        (!f.get('emar') || r.dataset.emar === '1');
+      r.hidden = !ok;
+      if (ok) n++;
+    }
+    shown.textContent = String(n);
+  }
+  form.addEventListener('change', apply);
+</script>
+
+<style>
+  .intro { padding-bottom: 32px; }
+  .eyebrow { text-transform: uppercase; letter-spacing: .08em; font-size: .85rem; font-weight: 600; color: var(--warm); }
+  .lede { font-size: 1.2rem; color: var(--muted); }
+  .updated { font-size: .95rem; color: var(--muted); }
+
+  .stats-band { padding: 28px 0; background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+  .stats strong { display: block; font-family: 'Fraunces', Georgia, serif; font-size: 1.7rem; color: var(--accent); }
+  .stats span { font-size: .98rem; color: var(--muted); }
+
+  .board { padding-top: 40px; }
+  .filters { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: end; margin-bottom: 8px; }
+  .filters label { display: flex; flex-direction: column; font-size: .9rem; font-weight: 600; gap: 4px; }
+  .filters label.check { flex-direction: row; align-items: center; gap: 8px; font-weight: 400; font-size: 1rem; padding-bottom: 8px; }
+  .filters select { font: inherit; font-size: 1rem; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); min-width: 180px; }
+  .filters input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--accent); }
+  .showing { font-size: .95rem; color: var(--muted); margin: 8px 0 16px; }
+
+  table.score { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); font-size: 1rem; }
+  .score thead th { text-align: left; font-size: .85rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); padding: 12px 14px; border-bottom: 2px solid var(--line); position: sticky; top: 0; background: var(--surface); }
+  .score tbody th, .score td { text-align: left; vertical-align: top; padding: 12px 14px; border-bottom: 1px solid var(--line); font-weight: 400; }
+  .score .name { display: block; font-weight: 600; }
+  .score .meta { font-size: .88rem; color: var(--muted); }
+  .lvl { text-decoration: none; display: inline-block; font-size: .75rem; font-weight: 600; padding: 1px 6px; margin-left: 4px; border-radius: 4px; background: #e7f0ef; color: var(--accent); }
+  .score small { display: block; font-size: .82rem; color: var(--muted); }
+  .score td.good { color: var(--accent); font-weight: 600; }
+  .score td.none { color: #8a959a; }
+  .score td.verified { font-size: .9rem; color: var(--muted); white-space: nowrap; }
+  .score tr[hidden] { display: none; }
+
+  .read dt { font-weight: 600; margin-top: 14px; }
+  .read dd { margin: 2px 0 0; color: var(--muted); }
+  .caveat { margin-top: 24px; padding: 14px 16px; background: var(--surface); border-left: 3px solid var(--warm); }
+  .closing .ctas { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+
+  @media (max-width: 860px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .score thead { display: none; }
+    table.score, .score tbody, .score tr, .score th, .score td { display: block; }
+    table.score { border: 0; background: none; }
+    .score tbody tr { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 12px; padding: 4px 0; }
+    .score tbody th { border-bottom: 1px solid var(--line); }
+    .score td { display: grid; grid-template-columns: 9.5em 1fr; gap: 8px; border-bottom: 0; padding: 6px 14px; }
+    .score td::before { content: attr(data-label); font-weight: 400; color: var(--muted); font-size: .9rem; }
+    .score td small { grid-column: 2; }
+    .score td.verified { white-space: normal; }
+  }
+  @media (max-width: 480px) {
+    .filters select { min-width: 0; width: 100%; }
+    .filters label { flex: 1 1 100%; }
+    .filters label.check { flex: 0 1 auto; }
+  }
+</style>

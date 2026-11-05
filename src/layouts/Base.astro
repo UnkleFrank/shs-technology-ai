@@ -32,7 +32,10 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
     <header class="site-header">
       <div class="wrap header-inner">
         <a class="brand" href="/">Senior Housing Solutions <span>Technology &amp; AI</span></a>
-        <a class="header-phone" href={SITE.phoneHref}>{SITE.phoneDisplay}</a>
+        <nav class="header-nav">
+          <a href="/scorecard/">Scorecard</a>
+          <a class="header-phone" href={SITE.phoneHref}>{SITE.phoneDisplay}</a>
+        </nav>
       </div>
     </header>
     <main><slot /></main>
@@ -80,7 +83,8 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
   .header-inner { display: flex; justify-content: space-between; align-items: center; padding-top: 14px; padding-bottom: 14px; gap: 12px; }
   .brand { font-family: 'Fraunces', Georgia, serif; font-weight: 600; color: var(--ink); text-decoration: none; }
   .brand span { color: var(--warm); font-weight: 500; }
-  .header-phone { font-weight: 600; text-decoration: none; white-space: nowrap; }
+  .header-nav { display: flex; gap: 18px; align-items: center; }
+  .header-nav a { font-weight: 600; text-decoration: none; white-space: nowrap; }
 
   .btn { display: inline-block; padding: 14px 22px; border-radius: 999px; font-weight: 600; text-decoration: none; }
   .btn-primary { background: var(--accent); color: var(--accent-ink); }
